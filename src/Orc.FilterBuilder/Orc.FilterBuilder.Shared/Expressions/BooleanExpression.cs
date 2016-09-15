@@ -9,6 +9,7 @@ namespace Orc.FilterBuilder
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq.Expressions;
 
     using Catel.Runtime.Serialization;
 
@@ -50,6 +51,18 @@ namespace Orc.FilterBuilder
                 default:
                     throw new NotSupportedException(string.Format("Condition '{0}' is not supported.", SelectedCondition));
             }
+        }
+
+        /// <summary>
+        ///   Converts <see cref="ConditionTreeItem"/> to a LINQ <see cref="Expression"/>
+        /// </summary>
+        /// <param name="propertyExpr">LINQ <see cref="MemberExpression"/>.</param>
+        /// <returns>LINQ Expression.</returns>
+        public override Expression ToLinqExpression(Expression propertyExpr)
+        {
+            var valueExpr = Expression.Constant(Value, typeof(bool));
+
+            return Expression.Equal(propertyExpr, valueExpr);
         }
 
         public override object Clone()

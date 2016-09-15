@@ -30,6 +30,11 @@ namespace Orc.FilterBuilder.Models
     {
         #region Constants
         private static readonly Type DefaultTargetType = typeof(object);
+        #endregion
+
+
+
+        #region Fields
         private object _scope;
         #endregion
 
@@ -195,19 +200,6 @@ namespace Orc.FilterBuilder.Models
         protected bool CheckExpressionValid()
         {
             return Root == null || CheckExpressionValid(Root);
-        }
-
-        public bool CalculateResult(object entity)
-        {
-            Argument.IsNotNull(() => entity);
-
-            var root = Root;
-            if (root != null)
-            {
-                return root.CalculateResult(entity);
-            }
-
-            return true;
         }
 
         /// <summary>

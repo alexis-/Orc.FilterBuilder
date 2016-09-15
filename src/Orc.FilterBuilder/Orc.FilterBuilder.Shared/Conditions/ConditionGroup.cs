@@ -1,13 +1,14 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ConditionGroup.cs" company="WildGums">
-//   Copyright (c) 2008 - 2014 WildGums. All rights reserved.
+//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-
 namespace Orc.FilterBuilder
 {
+    using System;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Text;
 
     using Catel.Collections;
@@ -21,9 +22,13 @@ namespace Orc.FilterBuilder
         }
         #endregion
 
+
+
         #region Properties
         public ConditionGroupType Type { get; set; }
         #endregion
+
+
 
         #region Methods
         public override bool CalculateResult(object entity)
@@ -46,10 +51,51 @@ namespace Orc.FilterBuilder
         public override object Clone()
         {
             var clone = new ConditionGroup { Type = this.Type };
-            
+
             Items.ForEach(i => clone.Items.Add(i.Clone() as ConditionTreeItem));
 
             return clone;
+        }
+
+        /// <summary>
+        ///   Converts <see cref="ConditionTreeItem"/> to a LINQ <see cref="Expression"/>
+        /// </summary>
+        /// <param name="parameterExpr">LINQ <see cref="ParameterExpression"/>.</param>
+        /// <returns>LINQ Expression.</returns>
+        public override Expression ToLinqExpression(Expression parameterExpr)
+        {
+            if (!Items.Any())
+            {
+                return Expression.Constant(true, typeof(bool));
+            }
+
+            var lastExpr = Items.First().ToLinqExpression(parameterExpr);
+
+            if (Items.Count <= 1)
+            {
+                return lastExpr;
+            }
+
+            for (int i = 1; i < Items.Count; i++)
+            {
+                var rightExpr = Items[i].ToLinqExpression(parameterExpr);
+
+                switch (Type)
+                {
+                    case ConditionGroupType.And:
+                        lastExpr = Expression.AndAlso(lastExpr, rightExpr);
+                        break;
+
+                    case ConditionGroupType.Or:
+                        lastExpr = Expression.OrElse(lastExpr, rightExpr);
+                        break;
+
+                    default:
+                        throw new InvalidOperationException($"Unsupported ConditionGroupType: {Type}");
+                }
+            }
+
+            return lastExpr;
         }
 
         public override string ToString()
