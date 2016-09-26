@@ -11,6 +11,7 @@ namespace Orc.FilterBuilder
     using System.Linq.Expressions;
     using System.Text;
 
+    using Catel;
     using Catel.Collections;
 
     public class ConditionGroup : ConditionTreeItem
@@ -64,6 +65,8 @@ namespace Orc.FilterBuilder
         /// <returns>LINQ Expression.</returns>
         public override Expression ToLinqExpression(Expression parameterExpr)
         {
+            Argument.IsNotNull(() => parameterExpr);
+
             if (!Items.Any())
             {
                 return Expression.Constant(true, typeof(bool));
